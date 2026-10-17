@@ -12,9 +12,10 @@ import type { Request, Response, NextFunction } from 'express';
 import { financeLedger, FinanceLedgerEngine } from './src/server/financeLedger.js';
 import { siteSettings, DEFAULT_SITE_SETTINGS } from './src/server/siteSettings.js';
 import { paymentGatewayManager } from './src/server/paymentGateways.js';
+import { sanitizePublicUser, isUserPublic, sanitizePublicGig, sanitizePublicProject, isGigPublic, isProjectPublic } from './server/publicData.js';
 import { setupSSR } from './server/ssr.js';
 import { slugify } from './src/utils/slugify.js';
-export { siteSettings, DEFAULT_SITE_SETTINGS };
+export { siteSettings, DEFAULT_SITE_SETTINGS, isGigPublic, sanitizePublicGig };
 import { OrderFeeBreakdown } from './src/shared/fees.js';
 import {
   SEED_USERS,
@@ -2290,79 +2291,11 @@ function splitOrderFunds(order: Order, refundAmount: number, actor: string, reas
   return result;
 }
 
-function sanitizePublicUser(user: any) {
-  if (!user) return null;
-  return {
-    id: user.id,
-    name: user.name,
-    username: user.username,
-    role: user.role || 'freelancer',
-    status: user.status || 'active',
-    avatar: user.avatar,
-    title: user.title,
-    bio: user.bio,
-    skills: user.skills || [],
-    category: user.category,
-    hourlyRate: user.hourlyRate,
-    rating: user.rating,
-    reviewsCount: user.reviewsCount,
-    completedJobs: user.completedJobs,
-    location: user.location,
-    countryFlag: user.countryFlag,
-    joinedDate: user.joinedDate,
-    verified: user.verified,
-    isAvailableNow: user.isAvailableNow,
-    badges: user.badges || [],
-    languages: user.languages || [],
-    portfolio: user.portfolio || [],
-    endorsements: user.endorsements || [],
-    certifications: user.certifications || [],
-    education: user.education || [],
-    experience: user.experience || [],
-    responseTime: user.responseTime,
-    deliveryRate: user.deliveryRate,
-    onTimeRate: user.onTimeRate,
-    repeatHireRate: user.repeatHireRate,
-    level: user.level
-  };
-}
-
-function isUserPublic(u: any): boolean {
-  if (!u) return false;
-  if (u.status !== 'active') return false;
-  if (['admin', 'super_admin', 'support'].includes(u.role)) return false;
-  return true;
-}
 
 app.get('/api/users', (req, res) => {
   const publicUsers = users.filter(isUserPublic).map(sanitizePublicUser);
   res.json(publicUsers);
 });
-function sanitizePublicGig(g: Gig): Omit<Gig, 'moderationStatus' | 'moderationNotes'> {
-  const { moderationStatus, moderationNotes, ...publicGig } = g;
-  return publicGig;
-}
-
-function sanitizePublicProject(p: Project): Omit<Project, 'moderationStatus' | 'moderationNotes'> {
-  const { moderationStatus, moderationNotes, ...publicProj } = p;
-  return publicProj;
-}
-
-function isGigPublic(g: Gig): boolean {
-  if (g.status !== 'published') return false;
-  if (g.moderationStatus && g.moderationStatus !== 'approved') return false;
-  const author = users.find(u => u.id === g.freelancerId);
-  if (author && author.status !== 'active') return false;
-  return true;
-}
-
-function isProjectPublic(p: Project): boolean {
-  if (p.status !== 'open' && p.status !== 'published') return false;
-  if (p.moderationStatus && p.moderationStatus !== 'approved') return false;
-  const author = users.find(u => u.id === p.buyerId);
-  if (author && author.status !== 'active') return false;
-  return true;
-}
 
 // Public Marketplace Endpoints: returns only published, active, approved listings without internal moderation/private metadata
 app.get('/api/gigs', (req, res) => {
@@ -6507,7 +6440,7 @@ app.get('/sitemap.xml', (_req, res) => {
 
 // SSR and Vite integration
 (async () => {
-  await setupSSR(app, IS_PROD, __dirname);
+  await setupSSR(app, IS_PROD, __dirname, () => ({ gigs, users, projects, categories }));
 
   const portArgIndex = process.argv.findIndex(arg => arg === '--port' || arg === '-p');
   const cliPort = portArgIndex !== -1 && process.argv[portArgIndex + 1] ? Number(process.argv[portArgIndex + 1]) : null;

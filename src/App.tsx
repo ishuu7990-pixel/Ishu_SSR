@@ -18,6 +18,7 @@ import { useAppData } from './hooks/useAppData';
 import { Header, Footer, ImpersonationBanner } from './layout';
 import { slugify } from './utils/slugify';
 import { getDeviceId } from './utils/deviceId';
+import { RESERVED_ROUTES } from './shared/routes';
 
 import * as DatabaseService from './services/DatabaseService';
 import { initialUsers, initialGigs, initialProjects, initialOrders } from './data/mockData';
@@ -425,12 +426,7 @@ export default function App({ initialPath, initialData }: { initialPath?: string
   };
 
   // Reserved top-level route segments
-  const reservedRoutes = [
-    'gigs', 'projects', 'search-projects', 'project-search', 'freelance-jobs', 'categories', 'orders', 'messages', 'create-gig', 'post-project', 
-    'admin', 'profile', 'payments', 'freelancers', 'search-freelancers', 'freelancer-search', 'freelance-activity', 'support', 
-    'settings', 'login', 'signup', 'forgot-password', 'verify', 'wishlist', 'notifications', 'switch-user',
-    'edit-profile', 'freelancer'
-  ];
+  const reservedRoutes = RESERVED_ROUTES;
 
   // Route matching
   const pathParts = path.split('/').filter(Boolean);
@@ -2965,6 +2961,7 @@ export default function App({ initialPath, initialData }: { initialPath?: string
             projects={projects}
             navigate={navigate}
             currentUser={currentUser}
+            query={initialData?.query}
           />
         )}
 

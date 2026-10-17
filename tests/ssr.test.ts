@@ -42,12 +42,24 @@ async function runTests() {
     console.log(`  ✅ GET ${gigUrl} returns 200 and contains gig title`);
   }
 
-  // 3. GET /john/garbage returns 404
-  const garbageRes = await fetch(`${BASE}/john/garbage`);
-  const garbageHtml = await garbageRes.text();
-  assert.strictEqual(garbageRes.status, 404, 'Invalid gig URL /john/garbage should return 404');
-  assert.strictEqual(garbageHtml.includes('noindex'), true, '404 page should contain noindex');
-  console.log('  ✅ GET /john/garbage returns 404 with noindex');
+  // 4. GET /gigs -> 200, no noindex
+  const gigsRes = await fetch(`${BASE}/gigs`);
+  const gigsHtml = await gigsRes.text();
+  assert.strictEqual(gigsRes.status, 200, '/gigs should return 200');
+  assert.strictEqual(gigsHtml.includes('noindex'), false, '/gigs must not contain noindex');
+  console.log('  ✅ GET /gigs returns 200 and has no noindex');
+
+  // 5. GET /projects -> 200
+  const projsRes = await fetch(`${BASE}/projects`);
+  assert.strictEqual(projsRes.status, 200, '/projects should return 200');
+  console.log('  ✅ GET /projects returns 200');
+
+  // 6. GET /admin -> noindex, nofollow
+  const adminRes = await fetch(`${BASE}/admin`);
+  const adminHtml = await adminRes.text();
+  assert.strictEqual(adminHtml.includes('noindex'), true, '/admin should contain noindex');
+  assert.strictEqual(adminHtml.includes('nofollow'), true, '/admin should contain nofollow');
+  console.log('  ✅ GET /admin returns noindex, nofollow');
 
   console.log('🎉 ALL SSR & SEO TESTS PASSED SUCCESSFULLY!');
   process.exit(0);

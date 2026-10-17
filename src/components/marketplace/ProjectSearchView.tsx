@@ -38,6 +38,7 @@ interface ProjectSearchViewProps {
   projects: Project[];
   navigate: (path: string, e?: React.MouseEvent) => void;
   currentUser?: UserAccount | null;
+  query?: string;
 }
 
 const CATEGORIES = [
@@ -72,11 +73,12 @@ const LOCATIONS = [
 export const ProjectSearchView: React.FC<ProjectSearchViewProps> = ({
   projects,
   navigate,
-  currentUser
+  currentUser,
+  query
 }) => {
   // Read URL query parameters
   const getInitialParams = () => {
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams(query || (typeof window !== 'undefined' ? window.location.search : ''));
     return {
       q: searchParams.get('q') || searchParams.get('query') || searchParams.get('search') || '',
       category: searchParams.get('category') || 'All Categories',
@@ -111,14 +113,16 @@ export const ProjectSearchView: React.FC<ProjectSearchViewProps> = ({
   
   // UI states
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [savedProjectIds, setSavedProjectIds] = useState<string[]>(() => {
+  const [savedProjectIds, setSavedProjectIds] = useState<string[]>([]);
+  
+  useEffect(() => {
     try {
       const saved = localStorage.getItem('wph_saved_projects');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
+      if (saved) setSavedProjectIds(JSON.parse(saved));
+    } catch (e) {
+      console.error(e);
     }
-  });
+  }, []);
   
   // Quick Preview Modal
   const [previewProject, setPreviewProject] = useState<Project | null>(null);
