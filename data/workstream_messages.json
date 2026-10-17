@@ -1,0 +1,209 @@
+[
+  {
+    "id": "msg_101_1",
+    "orderId": "ord_101",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🛡️ 14-Day Escrow Protection active: $1,500 USD deposited into secure escrow vault.",
+    "timestamp": "2026-03-02T10:00:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_101_2",
+    "orderId": "ord_101",
+    "senderId": "user_1",
+    "senderName": "Alex Rivera",
+    "text": "Hi Marcus! Excited to work together. I have attached the API specifications and database schema for the Escrow Dashboard.",
+    "timestamp": "2026-03-02T10:05:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_101_3",
+    "orderId": "ord_101",
+    "senderId": "user_3",
+    "senderName": "Marcus Vance",
+    "text": "Thanks Alex! Spec looks solid. Starting with the double-entry journal engine and WebSocket state synchronization today.",
+    "timestamp": "2026-03-02T10:30:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_101_4",
+    "orderId": "ord_101",
+    "senderId": "user_3",
+    "senderName": "Marcus Vance",
+    "text": "Milestone update: Core state synchronization complete. Deliverables submitted for review.",
+    "timestamp": "2026-03-02T14:15:00.000Z",
+    "type": "file",
+    "fileInfo": {
+      "name": "escrow_dashboard_v1.zip",
+      "size": "14.2 MB",
+      "url": "#"
+    }
+  },
+  {
+    "id": "msg_101_5",
+    "orderId": "ord_101",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🎉 Escrow funds ($1,500) released to Marcus Vance! Workstream completed with 5-star rating.",
+    "timestamp": "2026-03-02T15:00:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_102_1",
+    "orderId": "ord_102",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🛡️ 14-Day Escrow Protection active: $1,200 USD held safely in escrow.",
+    "timestamp": "2026-03-06T09:00:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_102_2",
+    "orderId": "ord_102",
+    "senderId": "user_4",
+    "senderName": "Sophia Chen",
+    "text": "Hi Elena! Excited for the design system. Here are our brand color contrast requirements.",
+    "timestamp": "2026-03-06T09:15:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_102_3",
+    "orderId": "ord_102",
+    "senderId": "user_2",
+    "senderName": "Elena Rostova",
+    "text": "Thanks Sophia! Here is the preliminary Figma design system preview with dark mode tokens.",
+    "timestamp": "2026-03-06T14:20:00.000Z",
+    "type": "file",
+    "fileInfo": {
+      "name": "b2b_analytics_design_system.fig",
+      "size": "28.5 MB",
+      "url": "#"
+    }
+  },
+  {
+    "id": "msg_102_4",
+    "orderId": "ord_102",
+    "senderId": "user_4",
+    "senderName": "Sophia Chen",
+    "text": "Phenomenal design system! Approving deliverables and releasing escrow.",
+    "timestamp": "2026-03-06T16:30:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_102_5",
+    "orderId": "ord_102",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🎉 Escrow funds ($1,200) released to Elena Rostova! Workstream completed.",
+    "timestamp": "2026-03-06T16:31:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_103_1",
+    "orderId": "ord_103",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🛡️ 14-Day Escrow Protection active: $950 USD funded.",
+    "timestamp": "2026-03-11T11:00:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_103_2",
+    "orderId": "ord_103",
+    "senderId": "user_5",
+    "senderName": "David Miller",
+    "text": "Hi Marcus! Here are the custom Gemini prompt specifications for our support agent.",
+    "timestamp": "2026-03-11T11:10:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_103_3",
+    "orderId": "ord_103",
+    "senderId": "user_3",
+    "senderName": "Marcus Vance",
+    "text": "API integration complete! Source code package attached.",
+    "timestamp": "2026-03-11T16:00:00.000Z",
+    "type": "file",
+    "fileInfo": {
+      "name": "ai_agent_pipeline_source.zip",
+      "size": "8.1 MB",
+      "url": "#"
+    }
+  },
+  {
+    "id": "msg_103_4",
+    "orderId": "ord_103",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🎉 Escrow funds ($950) released to Marcus Vance! Milestone complete.",
+    "timestamp": "2026-03-11T16:45:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_104_1",
+    "orderId": "ord_104",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🛡️ 14-Day Escrow Protection active: $2,500 USD held safely in escrow.",
+    "timestamp": "2026-03-21T10:00:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_104_2",
+    "orderId": "ord_104",
+    "senderId": "user_6",
+    "senderName": "Priya Sharma",
+    "text": "Hi David! Welcome onboard. Looking forward to Sprint 1 React Native mobile banking screens.",
+    "timestamp": "2026-03-21T10:15:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_104_3",
+    "orderId": "ord_104",
+    "senderId": "user_5",
+    "senderName": "David Miller",
+    "text": "Thanks Priya! Biometric auth and bottom tab navigation implemented. Setting up Expo preview build now.",
+    "timestamp": "2026-03-21T13:30:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_105_1",
+    "orderId": "ord_105",
+    "senderId": "system",
+    "senderName": "WorkSphere Escrow Vault",
+    "text": "🛡️ 14-Day Escrow Protection active: $450 USD held safely in escrow.",
+    "timestamp": "2026-03-26T14:00:00.000Z",
+    "type": "system"
+  },
+  {
+    "id": "msg_105_2",
+    "orderId": "ord_105",
+    "senderId": "user_7",
+    "senderName": "Liam O'Connor",
+    "text": "Hi Sophia! Here is our domain URL for the technical SEO and Core Web Vitals audit.",
+    "timestamp": "2026-03-26T14:10:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_105_3",
+    "orderId": "ord_105",
+    "senderId": "user_4",
+    "senderName": "Sophia Chen",
+    "text": "Thanks Liam! Lighthouse scan finished. Working on Schema metadata and high DA backlinks now.",
+    "timestamp": "2026-03-26T15:45:00.000Z",
+    "type": "message"
+  },
+  {
+    "id": "msg_1792146414992_6b0q",
+    "orderId": "ord_104",
+    "senderId": "user_9",
+    "senderName": "Nikhil (Master Admin)",
+    "text": "Hi",
+    "timestamp": "2026-10-16T10:26:54.992Z",
+    "type": "message",
+    "metadata": {
+      "clientMessageId": "msg_1792146414999_lo6b"
+    }
+  }
+]
