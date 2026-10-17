@@ -13,6 +13,7 @@ import { financeLedger, FinanceLedgerEngine } from './src/server/financeLedger.j
 import { siteSettings, DEFAULT_SITE_SETTINGS } from './src/server/siteSettings.js';
 import { paymentGatewayManager } from './src/server/paymentGateways.js';
 import { setupSSR } from './server/ssr.js';
+import { slugify } from './src/utils/slugify.js';
 export { siteSettings, DEFAULT_SITE_SETTINGS };
 import { OrderFeeBreakdown } from './src/shared/fees.js';
 import {
@@ -6492,7 +6493,11 @@ app.get('/sitemap.xml', (_req, res) => {
     `${baseUrl}/gigs`,
     `${baseUrl}/projects`,
     `${baseUrl}/freelancers`,
-    ...gigs.map(g => `${baseUrl}/gigs/${g.slug || g.id}`)
+    ...gigs.map(g => {
+      const uname = (g.freelancerUsername || slugify(g.freelancerName)).toLowerCase();
+      const gslug = (g.slug || slugify(g.title)).toLowerCase();
+      return `${baseUrl}/${uname}/${gslug}`;
+    })
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map(u => `  <url><loc>${u}</loc><changefreq>weekly</changefreq></url>`).join('\n') +

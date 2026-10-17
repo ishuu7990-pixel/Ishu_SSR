@@ -34,6 +34,7 @@ interface FreelancerSearchViewProps {
   currentUser: UserAccount | null;
   setIsSignupModalOpen: (b: boolean) => void;
   slugify: (name: string) => string;
+  query?: string;
 }
 
 export const FreelancerSearchView: React.FC<FreelancerSearchViewProps> = ({
@@ -42,12 +43,13 @@ export const FreelancerSearchView: React.FC<FreelancerSearchViewProps> = ({
   navigate,
   currentUser,
   setIsSignupModalOpen,
-  slugify
+  slugify,
+  query
 }) => {
   // Read initial query parameters from URL
   const getInitialParams = () => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
+      const urlParams = new URLSearchParams(query || (typeof window !== 'undefined' ? window.location.search : ''));
       return {
         q: urlParams.get('q') || urlParams.get('search') || '',
         category: urlParams.get('category') || 'All',
@@ -93,14 +95,16 @@ export const FreelancerSearchView: React.FC<FreelancerSearchViewProps> = ({
   // Sorting & Layout State
   const [sortBy, setSortBy] = useState<'relevance' | 'rating' | 'rate_low' | 'rate_high' | 'reviews' | 'jobs'>('relevance');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [savedUserIds, setSavedUserIds] = useState<string[]>(() => {
+  const [savedUserIds, setSavedUserIds] = useState<string[]>([]);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem('saved_freelancer_ids');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
+      if (saved) setSavedUserIds(JSON.parse(saved));
+    } catch (e) {
+      console.error(e);
     }
-  });
+  }, []);
 
   // Mobile Filter Drawer State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);

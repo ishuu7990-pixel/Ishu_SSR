@@ -6,10 +6,10 @@ import { getAuthToken } from '../utils/authToken';
 import { getDeviceId } from '../utils/deviceId';
 
 
-export const useAppData = () => {
-  const [users, setUsers] = useState<UserAccount[]>(initialUsers);
-  const [gigs, setGigs] = useState<Gig[]>(initialGigs);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+export const useAppData = (initialData?: any) => {
+  const [users, setUsers] = useState<UserAccount[]>(initialData?.users ?? initialUsers);
+  const [gigs, setGigs] = useState<Gig[]>(initialData?.gigs ?? initialGigs);
+  const [projects, setProjects] = useState<Project[]>(initialData?.projects ?? initialProjects);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -17,7 +17,7 @@ export const useAppData = () => {
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialData?.categories ?? []);
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [userEmails, setUserEmails] = useState<string[]>([]);

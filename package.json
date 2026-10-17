@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "build": "vite build --outDir dist/client && vite build --ssr src/entry-server.tsx --outDir dist/server",
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test": "NODE_ENV=test tsx tests/fees.test.ts && NODE_ENV=test tsx tests/fee-wiring.test.ts && NODE_ENV=test tsx tests/workstream.test.ts && NODE_ENV=test tsx tests/workstream-security.test.ts && NODE_ENV=test tsx tests/auto-accept.test.ts && NODE_ENV=test tsx tests/safe-file-link.test.ts && NODE_ENV=test tsx tests/patch-verification.test.ts"
+    "test": "NODE_ENV=test tsx tests/fees.test.ts && NODE_ENV=test tsx tests/fee-wiring.test.ts && NODE_ENV=test tsx tests/workstream.test.ts && NODE_ENV=test tsx tests/workstream-security.test.ts && NODE_ENV=test tsx tests/auto-accept.test.ts && NODE_ENV=test tsx tests/safe-file-link.test.ts && NODE_ENV=test tsx tests/patch-verification.test.ts && NODE_ENV=test tsx tests/ssr.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

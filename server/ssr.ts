@@ -7,14 +7,18 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import type { Express, Request, Response } from 'express';
-import { gigs } from '../server.js';
+import { gigs, users, projects } from '../server.js';
 import { slugify } from '../src/utils/slugify.js';
 
+const PRIVATE_ROUTES = [
+  'admin', 'messages', 'workstream', 'workstreams', 'workspace', 'orders', 'payments', 
+  'wallet', 'settings', 'edit-profile', 'login', 'signup', 'forgot-password', 'verify', 
+  'wishlist', 'notifications', 'switch-user', 'post-project', 'create-gig', 'support', 'freelancer'
+];
+
 const RESERVED_ROUTES = [
-  'gigs', 'projects', 'search-projects', 'project-search', 'freelance-jobs', 'categories', 'orders', 'messages', 'create-gig', 'post-project', 
-  'admin', 'profile', 'payments', 'freelancers', 'search-freelancers', 'freelancer-search', 'freelance-activity', 'support', 
-  'settings', 'login', 'signup', 'forgot-password', 'verify', 'wishlist', 'notifications', 'switch-user',
-  'edit-profile', 'freelancer'
+  ...PRIVATE_ROUTES,
+  'gigs', 'projects', 'search-projects', 'project-search', 'freelance-jobs', 'categories', 'freelancers', 'search-freelancers', 'freelancer-search'
 ];
 
 function getGigUrl(gig: any) {
@@ -44,7 +48,6 @@ export async function setupSSR(app: Express, isProd: boolean, root: string) {
     app.use(express.static(clientDist, { index: false }));
     templateHtml = fs.readFileSync(path.resolve(clientDist, 'index.html'), 'utf-8');
     
-    // Find server entry in serverDist
     const serverEntryFiles = fs.readdirSync(serverDist);
     const entryFile = serverEntryFiles.find(f => f.startsWith('entry-server') || f.endsWith('.js'));
     if (entryFile) {
@@ -54,97 +57,114 @@ export async function setupSSR(app: Express, isProd: boolean, root: string) {
   }
 
   app.use('*', async (req: Request, res: Response, next) => {
-    // Exclude API routes and static assets
-    if (req.originalUrl.startsWith('/api') || req.originalUrl.includes('.')) {
+    // Skip API routes
+    if (req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+
+    // Skip static assets only if they exist on disk
+    const isStaticFile = (url: string) => {
+      const pathname = url.split('?')[0];
+      const ext = path.extname(pathname);
+      if (!ext) return false;
+      const publicPath = path.join(root, 'public', pathname);
+      const distClientPath = path.join(root, 'dist/client', pathname);
+      return fs.existsSync(publicPath) || fs.existsSync(distClientPath);
+    };
+
+    if (isStaticFile(req.originalUrl)) {
       return next();
     }
 
     try {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      const url = req.originalUrl;
-      const pathParts = url.split('?')[0].split('/').filter(Boolean);
+      const [pathname, query] = req.originalUrl.split('?');
+      const pathParts = pathname.split('/').filter(Boolean);
 
-      let matchedGig: any = null;
-      let isGigRoute = false;
+      let initialData: any = { query };
+      let isPrivate = false;
       let notFound = false;
 
-      // Check if route matches gig detail: /:username/:slug OR /gigs/:id
-      if (pathParts.length === 2 && !RESERVED_ROUTES.includes(pathParts[0].toLowerCase())) {
+      const PUBLIC_GIGS = gigs.filter(g => g.status === 'published').slice(0, 24);
+      const PUBLIC_USERS = users.map(u => ({
+          id: u.id, name: u.name, username: u.username, title: u.title, avatar: u.avatar,
+          rating: u.rating, hourlyRate: u.hourlyRate, skills: u.skills, status: u.status
+      }));
+
+      // 1. Check if route is private (including nested routes)
+      const isPrivateRoute = (path: string) => {
+        const parts = path.split('/').filter(Boolean);
+        return parts.length > 0 && PRIVATE_ROUTES.some(pr => parts[0].toLowerCase() === pr.toLowerCase());
+      };
+
+      if (isPrivateRoute(pathname)) {
+        isPrivate = true;
+        initialData = { ...initialData, isPrivate: true, pageType: 'private' };
+      } else if (pathname === '/' || pathname === '') {
+        initialData = { ...initialData, pageType: 'home', gigs: PUBLIC_GIGS };
+      } else if (pathname === '/gigs') {
+        initialData = { ...initialData, pageType: 'gigs', gigs: PUBLIC_GIGS };
+      } else if (pathname.startsWith('/categories/')) {
+        initialData = { ...initialData, pageType: 'gigs', gigs: PUBLIC_GIGS };
+      } else if (['/projects', '/search-projects', '/project-search', '/freelance-jobs'].includes(pathname)) {
+        initialData = { ...initialData, pageType: 'projects', projects: projects };
+      } else if (['/freelancers', '/search-freelancers', '/freelancer-search'].includes(pathname)) {
+        initialData = { ...initialData, pageType: 'freelancers', users: PUBLIC_USERS };
+      } else if (pathParts.length === 2 && pathParts[0].toLowerCase() === 'gigs') {
+        const gigParam = pathParts[1].toLowerCase();
+        const matchedGig = gigs.find(g => g.id.toLowerCase() === gigParam || (g.slug && g.slug.toLowerCase() === gigParam));
+        if (matchedGig) {
+          initialData = { ...initialData, gig: matchedGig, gigUrl: getGigUrl(matchedGig) };
+        } else {
+          notFound = true;
+        }
+      } else if (pathParts.length === 2 && !RESERVED_ROUTES.includes(pathParts[0].toLowerCase())) {
         const usernameParam = pathParts[0].toLowerCase();
         const slugParam = pathParts[1].toLowerCase();
-        isGigRoute = true;
 
-        matchedGig = gigs.find(g => {
+        const matchedGig = gigs.find(g => {
           const gUname = (g.freelancerUsername || slugify(g.freelancerName)).toLowerCase();
           const gSlug = (g.slug || slugify(g.title)).toLowerCase();
-          return gSlug === slugParam || g.id === slugParam || gSlug.includes(slugParam.slice(0, 10)) || gUname.includes(usernameParam);
+          return gUname === usernameParam && gSlug === slugParam;
         });
 
-        if (!matchedGig) {
-          notFound = true;
-        }
-      } else if (pathParts.length >= 2 && pathParts[0].toLowerCase() === 'gigs') {
-        const gigIdParam = pathParts[1].toLowerCase();
-        isGigRoute = true;
-        matchedGig = gigs.find(g => g.id === gigIdParam || (g.slug && g.slug.toLowerCase() === gigIdParam));
-        if (!matchedGig) {
-          notFound = true;
-        }
-      }
-
-      // If it's not a public gig route (private routes, home, lists, etc.), serve normal SPA index.html with noindex, nofollow
-      if (!isGigRoute) {
-        let template = '';
-        if (!isProd && vite) {
-          template = fs.readFileSync(path.resolve(root, 'index.html'), 'utf-8');
-          template = await vite.transformIndexHtml(url, template);
+        if (matchedGig) {
+          initialData = { ...initialData, gig: matchedGig, gigUrl: getGigUrl(matchedGig) };
         } else {
-          template = templateHtml;
+          notFound = true;
         }
-
-        const headReplacement = `
-          <title>Work Per Hour | Freelance Marketplace & Escrow Platform</title>
-          <meta name="robots" content="noindex, nofollow" />
-          <meta name="description" content="A feature-rich PeoplePerHour clone with gig marketplace, custom project proposals, escrow payments, real-time messaging, and buyer/seller dashboards." />
-        `;
-        const html = template.replace('</head>', `${headReplacement}\n</head>`);
-        return res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      } else if (pathParts.length === 1 && !RESERVED_ROUTES.includes(pathParts[0].toLowerCase())) {
+        const usernameParam = pathParts[0].toLowerCase();
+        const matchedUser = users.find(u => (u.username && u.username.toLowerCase() === usernameParam) || slugify(u.name).toLowerCase() === usernameParam);
+        if (matchedUser) {
+          initialData = { ...initialData, profileUser: matchedUser };
+        } else {
+          notFound = true;
+        }
+      } else {
+        notFound = true;
       }
 
-      // If gig route but not found
       if (notFound) {
-        let template = '';
-        if (!isProd && vite) {
-          template = fs.readFileSync(path.resolve(root, 'index.html'), 'utf-8');
-          template = await vite.transformIndexHtml(url, template);
-        } else {
-          template = templateHtml;
-        }
-
-        let renderFn = ssrRender;
-        if (!isProd && vite) {
-          const mod = await vite.ssrLoadModule('/src/entry-server.tsx');
-          renderFn = mod.render;
-        }
-
-        const initialData = { notFound: true };
-        const rendered = renderFn ? renderFn(url, initialData) : { html: '', head: '<title>Not Found</title><meta name="robots" content="noindex" />' };
-        
-        const finalHtml = template
-          .replace('</head>', `${rendered.head}\n</head>`)
-          .replace('<div id="root"></div>', `<div id="root">${rendered.html}</div>\n<script>window.__INITIAL_DATA__ = ${JSON.stringify(initialData).replace(/</g, '\\u003c')};</script>`);
-
-        return res.status(404).set({ 'Content-Type': 'text/html' }).end(finalHtml);
+        initialData = { ...initialData, notFound: true };
       }
 
-      // Load template
       let template = '';
       if (!isProd && vite) {
         template = fs.readFileSync(path.resolve(root, 'index.html'), 'utf-8');
-        template = await vite.transformIndexHtml(url, template);
+        template = await vite.transformIndexHtml(req.originalUrl, template);
       } else {
         template = templateHtml;
       }
+
+      // Remove existing head tags
+      template = template
+        .replace(/<title>.*?<\/title>/gi, '')
+        .replace(/<meta\s+name=["']description["'].*?>/gi, '')
+        .replace(/<meta\s+name=["']robots["'].*?>/gi, '')
+        .replace(/<link\s+rel=["']canonical["'].*?>/gi, '')
+        .replace(/<meta\s+property=["']og:.*?["'].*?>/gi, '')
+        .replace(/<meta\s+name=["']twitter:.*?["'].*?>/gi, '');
 
       let renderFn = ssrRender;
       if (!isProd && vite) {
@@ -152,18 +172,14 @@ export async function setupSSR(app: Express, isProd: boolean, root: string) {
         renderFn = mod.render;
       }
 
-      const initialData = {
-        gig: matchedGig,
-        gigUrl: getGigUrl(matchedGig)
-      };
-
-      const rendered = renderFn ? renderFn(url, initialData) : { html: '', head: '' };
+      const rendered = renderFn ? renderFn(pathname, initialData) : { html: '', head: '' };
 
       const finalHtml = template
         .replace('</head>', `${rendered.head}\n</head>`)
         .replace('<div id="root"></div>', `<div id="root">${rendered.html}</div>\n<script>window.__INITIAL_DATA__ = ${JSON.stringify(initialData).replace(/</g, '\\u003c')};</script>`);
 
-      return res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHtml);
+      const statusCode = notFound ? 404 : 200;
+      return res.status(statusCode).set({ 'Content-Type': 'text/html' }).end(finalHtml);
 
     } catch (e: any) {
       if (!isProd && vite) {

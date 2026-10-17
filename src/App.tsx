@@ -5,7 +5,6 @@ import {
   PlusCircle, RefreshCw, Search, Send, Shield, ShieldCheck, Sparkles, Star,
   Trash2, User, Users, Wallet
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { PaymentsModule } from './components/PaymentsModule';
 import { FreelancerProfileView } from './components/FreelancerProfileView';
 import { InspectUserModal, EditUserProfileModal, EditProfilePage } from './components/profile';
@@ -100,28 +99,32 @@ export default function App({ initialPath, initialData }: { initialPath?: string
   // Impersonation State
   const [impersonatedUser, setImpersonatedUser] = useState<UserAccount | null>(null);
 
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const cached = localStorage.getItem('current_user') || localStorage.getItem('user');
-      const token = getAuthToken();
-      if (cached && token) return JSON.parse(cached);
-    } catch (e) {}
-    return null;
-  });
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
 
   const updateCurrentUser = (u: UserAccount | null | ((prev: UserAccount | null) => UserAccount | null)) => {
     setCurrentUser(prev => {
       const next = typeof u === 'function' ? u(prev) : u;
       if (next) {
-        localStorage.setItem('current_user', JSON.stringify(next));
+        if (typeof window !== 'undefined') localStorage.setItem('current_user', JSON.stringify(next));
       } else {
-        localStorage.removeItem('current_user');
-        localStorage.removeItem('user');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('current_user');
+          localStorage.removeItem('user');
+        }
       }
       return next;
     });
   };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('current_user') || localStorage.getItem('user');
+      const token = getAuthToken();
+      if (cached && token) {
+        try { setCurrentUser(JSON.parse(cached)); } catch(e) {}
+      }
+    }
+  }, []);
 
 
   // Custom Data Hook
@@ -145,7 +148,7 @@ export default function App({ initialPath, initialData }: { initialPath?: string
     smallOrderFeeAmount, setSmallOrderFeeAmount,
     escrowProtectionDays, setEscrowProtectionDays,
     refresh, userEmails, setUserEmails, fetchUserEmails
-  } = useAppData();
+  } = useAppData(initialData);
 
 
   // Search & Filter
@@ -476,22 +479,15 @@ export default function App({ initialPath, initialData }: { initialPath?: string
       currentGig = gigs.find(g => {
         const gigUsername = (g.freelancerUsername || slugify(g.freelancerName)).toLowerCase();
         const gigSlug = (g.slug || slugify(g.title)).toLowerCase();
-        return gigSlug === slugParam || g.id === slugParam || slugParam.includes(gigSlug.slice(0, 10)) || gigUsername.includes(usernameParam);
+        return gigUsername === usernameParam && gigSlug === slugParam;
       });
-
-      if (!currentGig && gigs.length > 0) {
-        currentGig = gigs[0];
-      }
 
       if (currentGig) {
         isGigDetail = true;
       }
     } else if (path.startsWith('/gigs/') && path.length > 6) {
       const gigIdParam = path.replace('/gigs/', '').toLowerCase();
-      currentGig = gigs.find(g => g.id === gigIdParam || (g.slug && g.slug.toLowerCase() === gigIdParam));
-      if (!currentGig && gigs.length > 0) {
-        currentGig = gigs[0];
-      }
+      currentGig = gigs.find(g => g.id.toLowerCase() === gigIdParam || (g.slug && g.slug.toLowerCase() === gigIdParam));
       if (currentGig) {
         isGigDetail = true;
       }
